@@ -1,3 +1,3 @@
 #!/bin/sh
 
-g++ code-example/main.cpp
+scan-build -k -o $1 g++ code-example/main.cpp

@@ -8,29 +8,29 @@ pipeline {
 
     agent any
     stages {
-        stage("Set Up") {
-            steps {
-                sh(script: "sudo apt-get install clang-tools",
-                   label: "Downloading clang-tools for scan-build.")
-            }
-        }
-
         stage("Build and Scan") {
-            steps{
-                sh "scan-build -k -o ${SCAN_BUILD_TMPDIR} ./build.sh"
+            steps {
+                sh(script: "./build.sh ${env.SCAN_BUILD_TMPDIR}",
+                   label: "Build and scan the project.")
             }
         }
     }
     post {
         failure {
-            publishHTML (target: [
-                            allowMissing: false,
-                            alwaysLinkToLastBuild: false,
-                            keepAll: true,
-                            reportDir: "${env.SCAN_BUILD_ARCHIVE}",
-                            reportFiles: 'index.html',
-                            reportName: "Scan-Build Report"]
-            )
+            script {
+                try {
+                    publishHTML (target: [
+                                    allowMissing: false,
+                                    alwaysLinkToLastBuild: false,
+                                    keepAll: true,
+                                    reportDir: "${env.SCAN_BUILD_ARCHIVE}",
+                                    reportFiles: 'index.html',
+                                    reportName: "Scan-Build Report"])
+                }
+                catch(e) {
+                    echo "The report doesn't exist."
+                }
+            }
         }
     }
 }
