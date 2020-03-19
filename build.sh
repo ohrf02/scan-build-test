@@ -1,3 +1,12 @@
 #!/bin/sh
 
-scan-build -k -o $1 g++ code-example/main.cpp
+# Clean the env.
+scons -c
+
+# Build and scan.
+if [ -z "$1" ]
+then
+    scan-build-7 -k --status-bugs -maxloop 25 --use-c++=g++ --use-cc=gcc -enable-checker alpha -enable-checker nullability -enable-checker security scons -k
+else
+    scan-build-7 -k --status-bugs -maxloop 25 --use-c++=g++ --use-cc=gcc -enable-checker alpha -enable-checker nullability -enable-checker security -o $1 scons -k
+fi
