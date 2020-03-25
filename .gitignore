@@ -1,4 +1,5 @@
 .sconsign.dblite
 *.o
 code-example/test
-
+cppcheck-result.xml
+pylint.report

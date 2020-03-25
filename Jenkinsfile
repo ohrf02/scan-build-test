@@ -4,7 +4,6 @@ pipeline {
     agent any
     environment {
         SCAN_BUILD_TMPDIR = sh(script: "mktemp -d /tmp/scan-build.XXXXXX", returnStdout: true).trim()
-        BUG_FOUND = false
     }
 
     stages {
@@ -29,7 +28,7 @@ pipeline {
         stage("Pylint") {
             steps{
                 script {
-                    sh(script: "find code-example -type f -name '*.py' | xargs pylint -f parseable > pylint.report",
+                    sh(script: "find code-example -type f -name '*.py' | xargs pylint --output-format=parseable > pylint.report || exit 0",
                        label: "Running pylint.")
                 }
             }
@@ -38,9 +37,17 @@ pipeline {
 
     post {
         always {
-            recordIssues enabledForFailure: true, tool: cppCheck(pattern: "checkstyle-result.xml")
-            recordIssues enabledForFailure: true, tool: clangAnalyzer(pattern: "${env.SCAN_BUILD_TMPDIR}/*")
+            recordIssues enabledForFailure: true, tool: cppCheck(pattern: "cppcheck-result.xml")
             recordIssues enabledForFailure: true, tool: pyLint(pattern: "pylint.report")
+
+            publishHTML (target: [
+                            allowMissing: false,
+                            alwaysLinkToLastBuild: false,
+                            keepAll: true,
+                            reportDir: "${env.SCAN_BUILD_TMPDIR}",
+                            reportFiles: '*/**',
+                            reportName: "Scan-Build Report"]
+            )
         }
     }
 }
