@@ -17,13 +17,13 @@ pipeline {
                     }
                     catch(e) {
                         env.BUG_FOUND = true
-                        publishHTML(target: [
-                                        allowMissing: false,
-                                        alwaysLinkToLastBuild: false,
-                                        keepAll: true,
-                                        reportDir: "${env.SCAN_BUILD_TMPDIR}/",
-                                        reportFiles: '*/**',
-                                        reportName: "Clang Report"])
+                        def clangAnalyzer = scanForIssues tool: clangAnalyzer(pattern: "env.SCAN_BUILD_TMPDIR/*")
+                        publishIssues issues: [clangAnalyzer]
+
+                        publishIssues id: 'analysis', name: 'All Issues',
+                            issues: [clangAnalyzer],
+                            filters: [includePackage('io.jenkins.plugins.analysis.*')]
+
                     }
                 }
             }
