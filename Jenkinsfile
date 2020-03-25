@@ -29,7 +29,7 @@ pipeline {
         stage("Pylint") {
             steps{
                 script {
-                    sh(script: "find code-example -type f file -name '*.py' | xargs pylint -f parsable > pylint.report",
+                    sh(script: "find code-example -type f -name '*.py' | xargs pylint -f parseable > pylint.report",
                        label: "Running pylint.")
                 }
             }
@@ -38,8 +38,8 @@ pipeline {
 
     post {
         always {
-            recordIssues enabledForFailure: true, tool: checkStyle()
-            recordIssues enabledForFailure: true, tool: clangAnalyzer(pattern: "env.SCAN_BUILD_TMPDIR/*")
+            recordIssues enabledForFailure: true, tool: cppCheck(pattern: "checkstyle-result.xml")
+            recordIssues enabledForFailure: true, tool: clangAnalyzer(pattern: "${env.SCAN_BUILD_TMPDIR}/*")
             recordIssues enabledForFailure: true, tool: pyLint(pattern: "pylint.report")
         }
     }
